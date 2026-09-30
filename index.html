@@ -479,16 +479,22 @@
                 if(upText.includes('(BÖLGE)') || upText.includes('(BOLGE)')) { typeOverride = 'region'; text = text.replace(/\(.*\)/, '').trim(); } 
                 else if (upText.includes('(İL)') || upText.includes('(IL)')) { typeOverride = 'il'; text = text.replace(/\(.*\)/, '').trim(); }
 
-                const searchVal = text.toLocaleLowerCase('tr').replace(/\s/g, '');
-                const matches = FILTERED_GEOJSON.features.filter(f => {
-                    const p = f.properties;
-                    const brickName = p.display_name.toLocaleLowerCase('tr').replace(/\s/g, '');
-                    const ilName = p.display_il.toLocaleLowerCase('tr').replace(/\s/g, '');
-                    const regName = p.display_region.toLocaleLowerCase('tr').replace(/\s/g, '');
-                    if(typeOverride === 'region') return regName === searchVal;
-                    else if (typeOverride === 'il') return ilName === searchVal;
-                    else return brickName.includes(searchVal) || ilName === searchVal || regName === searchVal;
-                });
+               const searchVal = text.toLocaleLowerCase('tr').replace(/\s/g, '');
+const norm = (s) => (s || '').toLocaleLowerCase('tr').replace(/\s/g, '');
+
+let matches = FILTERED_GEOJSON.features.filter(f => {
+    const p = f.properties;
+    const ilName = norm(p.display_il);
+    const regName = norm(p.display_region);
+    if (typeOverride === 'region') return regName === searchVal;
+    if (typeOverride === 'il') return ilName === searchVal;
+    return norm(p.display_name) === searchVal || ilName === searchVal || regName === searchVal;
+});
+
+// Tam eşleşme yoksa, son çare olarak "içerir" araması
+if (matches.length === 0 && !typeOverride) {
+    matches = FILTERED_GEOJSON.features.filter(f => norm(f.properties.display_name).includes(searchVal));
+}
 
                 if (matches.length > 0) {
                     matches.forEach(m => {
