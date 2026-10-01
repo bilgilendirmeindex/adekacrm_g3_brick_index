@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>Grup-2 Brick INDEX Analizi</title>
+    <title>Grup-3 Brick INDEX Analizi</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -205,7 +205,7 @@
                 <i class="fa-solid fa-cube"></i>
             </div>
             <h2>Brick Index Analizi</h2>
-            <p>Grup-2 Bölge & Index Analizi</p>
+            <p>Grup-3 Bölge & Index Analizi</p>
             <div class="input-group">
                 <i class="fa-solid fa-user"></i>
                 <input type="text" id="username" placeholder="Kullanıcı Adı" autocomplete="off" onkeypress="if(event.key === 'Enter') document.getElementById('password').focus()" />
@@ -224,7 +224,7 @@
     <div id="top-bar">
         <div class="brand">
             <i class="fa-solid fa-layer-group" style="color:var(--primary)"></i> 
-            Grup-2 <span class="badge">DÖNEM 2026-08</span>
+            Grup-3 <span class="badge">DÖNEM 2026-08</span>
         </div>
         
         <div class="top-actions">
@@ -336,7 +336,7 @@
 
     <script>
         const USER_DB = {
-            "admin":    { pass: "admin", region: "ADMIN", label: "Grup-2 BUM - Nezahat BAĞ" },
+            "admin":    { pass: "admin", region: "ADMIN", label: "Grup-3 BUM - Oktay YETEN" },
             "yeliz.batmaz@adeka.com.tr":    { pass: "ZOE1956", region: "ADMIN", label: "SFE Müdür - Yeliz BATMAZ" },
             "adana":    { pass: "1234", region: "ADANA", label: "Adana Bölge Müdürü" },
             "yasar.cetin@adeka.com.tr":   { pass: "YC1956", region: "ANKARA", label: "Ankara Bölge Müdürü" },      
@@ -447,6 +447,17 @@
         function fmtN2(val) { return val.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
         function rp(val) { return Math.round(val * 10000) / 10000; } // %xx,xx hassasiyeti
 
+        // Listeyi Total Index'e (etki oranı dahil) göre büyükten küçüğe sıralar. Orijinal diziyi değiştirmez.
+        // Hem sol liste hem Excel çıktısı bu fonksiyonu kullanır.
+        function sortByIdx(list, ratios) {
+            return [...list].sort((a, b) => {
+                const pa = a.feature.properties, pb = b.feature.properties;
+                const ia = pa.DATA.total_idx_tot * (ratios[pa.gid] || 1.0);
+                const ib = pb.DATA.total_idx_tot * (ratios[pb.gid] || 1.0);
+                return ib - ia;
+            });
+        }
+
         function getData(props) {
             return {
                 subText: props["display_region"] && props["display_il"] ? `${props["display_region"]} / ${props["display_il"]}` : (props["display_il"] || props["display_region"] || "-"),
@@ -547,7 +558,7 @@
             let hEski = 0, kEski = 0, iEski = 0, mEski = 0, uEski = 0, potEski = 0, drEski = 0;
             if (selectedEski.length > 0) {
                 if (activeMode === 'eski') html += `<div class="list-header">MEVCUT YAPI SEÇİMLERİ (${selectedEski.length})</div>`;
-                selectedEski.forEach(layer => {
+                sortByIdx(selectedEski, ratiosEski).forEach(layer => {
                     const d = getData(layer.feature.properties); const ratio = ratiosEski[d.gid] || 1.0;
                     hEski += d.raw_hedef * ratio; kEski += d.raw_kutu * ratio; iEski += d.raw_idx * ratio;
                     mEski += d.raw_mgs * ratio; uEski += d.raw_ugs * ratio;
@@ -559,7 +570,7 @@
             let hYeni = 0, kYeni = 0, iYeni = 0, mYeni = 0, uYeni = 0, potYeni = 0, drYeni = 0;
             if (selectedYeni.length > 0) {
                 if (activeMode === 'yeni') html += `<div class="list-header">YENİ YAPI TASLAK SEÇİMLERİ (${selectedYeni.length})</div>`;
-                selectedYeni.forEach(layer => {
+                sortByIdx(selectedYeni, ratiosYeni).forEach(layer => {
                     const d = getData(layer.feature.properties); const ratio = ratiosYeni[d.gid] || 1.0;
                     hYeni += d.raw_hedef * ratio; kYeni += d.raw_kutu * ratio; iYeni += d.raw_idx * ratio;
                     mYeni += d.raw_mgs * ratio; uYeni += d.raw_ugs * ratio;
@@ -749,7 +760,7 @@
             if (selectedEski.length === 0 && selectedYeni.length === 0) { alert("Lütfen önce seçim yapın."); return; }
             
             let hEski = 0, kEski = 0, iEski = 0, mgsEski = 0, ugsEski = 0, potEski = 0, drEski = 0; let detayEski = [];
-            selectedEski.forEach(layer => {
+            sortByIdx(selectedEski, ratiosEski).forEach(layer => {
                 const d = getData(layer.feature.properties); const ratio = ratiosEski[d.gid] || 1.0;
                 const simH = d.raw_hedef * ratio, simK = d.raw_kutu * ratio, simI = d.raw_idx * ratio;
                 const simMGS = d.raw_mgs * ratio, simUGS = d.raw_ugs * ratio;
@@ -761,7 +772,7 @@
             });
 
             let hYeni = 0, kYeni = 0, iYeni = 0, mgsYeni = 0, ugsYeni = 0, potYeni = 0, drYeni = 0; let detayYeni = [];
-            selectedYeni.forEach(layer => {
+            sortByIdx(selectedYeni, ratiosYeni).forEach(layer => {
                 const d = getData(layer.feature.properties); const ratio = ratiosYeni[d.gid] || 1.0;
                 const simH = d.raw_hedef * ratio, simK = d.raw_kutu * ratio, simI = d.raw_idx * ratio;
                 const simMGS = d.raw_mgs * ratio, simUGS = d.raw_ugs * ratio;
